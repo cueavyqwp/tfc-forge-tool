@@ -1,4 +1,6 @@
-title = Forge tool
+title = forge tool
+start = start position: 
+output = output
 
 # Forge
 forge.hit_light = Light Hit

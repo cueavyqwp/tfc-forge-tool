@@ -1,4 +1,6 @@
 title = 锻造工具
+start = 起始位置: 
+output = 输出
 
 # 锻造
 forge.hit_light = 轻击
