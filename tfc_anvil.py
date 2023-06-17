@@ -55,8 +55,11 @@ button.pack( side = tk.BOTTOM )
 
 text = tk.Text( root , font = font )
 text.pack( anchor = tk.CENTER , fill = tk.BOTH )
-def output_text( text = "" ) :
-    text
+def output_text( info = "" , end = "\n" ) :
+    text.config( state = tk.NORMAL )
+    text.insert( tk.END , info + end )
+    text.config( state = tk.DISABLED )
+output_text("")
 
 def output() :
     num = item[ combobox.get() ]
