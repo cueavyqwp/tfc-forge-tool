@@ -1,0 +1,13 @@
+title = 锻造工具
+
+# 锻造
+forge.hit_light = 轻击
+forge.hit_medium = 击打
+forge.hit_hard = 重击
+forge.draw = 牵拉
+forge.bend = 弯曲
+forge.punch = 冲压
+forge.shrink = 收缩
+forge.upset = 镦锻
+
+tfc.pick_head = 镐头

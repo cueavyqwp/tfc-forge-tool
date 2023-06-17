@@ -1,0 +1,13 @@
+title = Forge tool
+
+# Forge
+forge.hit_light = Light Hit
+forge.hit_medium = Medium Hit
+forge.hit_hard = Hard Hit
+forge.draw = Draw
+forge.bend = Bend
+forge.punch = Punch
+forge.shrink = Shrink
+forge.upset = Upset
+
+tfc.pick_head = Pickaxe Head
