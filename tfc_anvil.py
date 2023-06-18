@@ -171,7 +171,11 @@ def output() :
     output_text()
     for i in range( len( end_combobox ) - 1 , -1 , -1 ) :
         output_text( f"{ end_combobox[i].get() } * 1" )
+def close( event ) :
+    root.destroy()
+    quit()
 button.config( command = output )
 root.bind( "<B3-Motion>" , move )
 root.bind( "<Button-3>" , get_point )
+root.bind( "<Escape>" , close )
 root.mainloop()
