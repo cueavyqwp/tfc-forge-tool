@@ -1,8 +1,8 @@
 title = forge tool
 start = start position: 
+end_p = end position: 
 output = output
 end = end
-end_p = end position: 
 
 # Forge
 forge.hit_light = Light Hit

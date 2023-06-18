@@ -1,8 +1,8 @@
 title = 锻造工具
 start = 起始位置: 
+end_p = 结束位置: 
 output = 输出
 end = 末尾
-end_p = 结束位置: 
 
 # 锻造
 forge.hit_light = 轻击
