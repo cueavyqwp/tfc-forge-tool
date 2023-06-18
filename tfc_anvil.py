@@ -1,5 +1,6 @@
-from tkinter import scrolledtext , ttk
+from tkinter import scrolledtext , messagebox , filedialog , ttk
 import tkinter as tk
+import json
 import pip
 
 font = ( "Consolas" , 18 , "bold" )
@@ -12,16 +13,18 @@ while 1 :
         pip.main( [ "install" , "langful" ] )
 
 lang = langful.lang( default_lang = "en_us" , file_type = "lang" )
+# debug
 # lang.use_locale="en_us"
+# lang.use_locale="zh_cn"
 win_size = 400 , 700
 x , y = 0 , 0
+is_debug = True
 root = tk.Tk()
 root.title( lang.get("title") )
 root.geometry( f"{win_size[0]}x{win_size[1]}+200+200" )
-root.resizable( 0 , 0 )
-root.overrideredirect(1)
 root.attributes( "-topmost" , 1 )
 root.attributes( "-transparent" )
+root.update()
 
 forge = [{
     "name" : "forge.hit_light" ,
@@ -53,46 +56,55 @@ forge_nums = { i["name"] : i["value"] for i in forge }
 forge_name = { lang.get(i) : i for i in forge_nums }
 forge_nums_name = { v : k for k , v in forge_nums.items() }
 
-frame_start = tk.Frame()
-tk.Label( frame_start , text = lang.get("start") ).pack( side = tk.LEFT )
-start_text = ttk.Entry( frame_start , font = font )
+info_frame = tk.Frame()
+
+load_button = ttk.Button( info_frame , text = lang.get( "load" ) )
+load_button.pack( side = tk.RIGHT , anchor=tk.E , fill = tk.BOTH )
+
+output_button = ttk.Button( root , text = lang.get("output") )
+output_button.pack( side = tk.BOTTOM , fill =  tk.X )
+
+save_button = ttk.Button( root , text = lang.get("save") )
+save_button.pack( side = tk.BOTTOM , fill =  tk.X )
+
+start_frame = tk.Frame(info_frame)
+tk.Label( start_frame , text = lang.get("start") ).pack( side = tk.LEFT )
+start_text = ttk.Entry( start_frame , font = font )
 start_text.pack( fill = tk.X )
-def start_text_init() :
+def start_text_init( num = 0 ) :
     start_text.delete( "0" , tk.END )
-    start_text.insert( "0" , 0 )
+    start_text.insert( "0" , num )
 start_text_init()
-frame_start.pack( fill = tk.X )
+start_frame.pack( fill = tk.X )
 
-frame_end = tk.Frame()
-tk.Label( frame_end , text = lang.get("end_p") ).pack( side = tk.LEFT )
-end_text = ttk.Entry( frame_end , font = font )
+end_frame = tk.Frame(info_frame)
+tk.Label( end_frame , text = lang.get("end_p") ).pack( side = tk.LEFT )
+end_text = ttk.Entry( end_frame , font = font )
 end_text.pack( fill = tk.X )
-def end_text_init() :
+def end_text_init( num = 0 ) :
     end_text.delete( "0" , tk.END )
-    end_text.insert( "0" , 0 )
+    end_text.insert( "0" , num )
 end_text_init()
-frame_end.pack( fill = tk.X )
+end_frame.pack( fill = tk.X )
 
-frame_end_combobox = ttk.Frame()
 end_combobox = []
-tk.Label( frame_end_combobox , text = lang.get( "end" ) ).pack( side = "left" )
+tk.Label( info_frame , text = lang.get( "end" ) ).pack( side = "left" )
 for i in [ [tk.N,tk.LEFT] , [tk.NW,tk.RIGHT] , [tk.NE,tk.LEFT] ] :
-    end_combobox.append( ttk.Combobox( frame_end_combobox ) )
+    end_combobox.append( ttk.Combobox( info_frame ) )
     end_combobox[-1]["value"] = tuple( forge_name.keys() )
     end_combobox[-1]["state"] = "readonly"
     end_combobox[-1].current(0)
     end_combobox[-1].pack( fill = tk.X )
-frame_end_combobox.pack(fill="x")
 
-button = ttk.Button( root , text = lang.get("output") )
-button.pack( side = tk.BOTTOM , fill = "x" )
+info_frame.pack( fill = tk.X )
 
-text = scrolledtext.ScrolledText( root , relief = tk.RIDGE , font = font )
+text = scrolledtext.ScrolledText( root , relief = tk.RIDGE , font = font , height = root.winfo_height() )
 text.pack( anchor = tk.CENTER , fill = tk.BOTH )
 def output_text( info = "" , end = "\n" , cls = False ) :
     text.config( state = tk.NORMAL )
     if cls :
         text.delete( "0.0" , tk.END )
+        end = ""
     text.insert( tk.END , str( info ) + end )
     text.config( state = tk.DISABLED )
 output_text("")
@@ -106,6 +118,53 @@ def get_point( event ) :
     global x , y
     x = event.x
     y = event.y
+
+def debug( text ) :
+    if is_debug :
+        print( text )
+
+def join( list ) :
+    ret = [ list[0] ]
+    list = list[1:]
+    for i in list :
+        if ret[-1][0] == i[0] :
+            ret[-1][-1] += i[-1]
+        else :
+            ret.append(i)
+    return ret
+
+def load() :
+    path = filedialog.askopenfilename( initialdir = "./" )
+    if not path :
+        return
+    debug(path)
+    try :
+        with open( path , encoding = "utf-8" ) as file :
+            data = json.load( file )
+        start , end = data["pos"]
+        start_text_init( start )
+        end_text_init( end )
+        for i in range(3) :
+            num = list( forge_nums.keys() ).index( data["end"][i] )
+            end_combobox[i].current( num )
+    except Exception as e :
+        messagebox.showerror( lang.get("error") , e )
+
+def save() :
+    path = filedialog.asksaveasfilename( initialdir = "./" , initialfile = "data" , filetypes = [ [ "JSON" , ".json" ] ] )
+    if not path :
+        return
+    path += ".json"
+    debug(path)
+    data = {}
+    data["pos"] = [ start_text.get() , end_text.get() ]
+    data["end"] = [ forge_name[ i.get() ] for i in end_combobox ]
+    debug(data)
+    try :
+        with open( path , "w" , encoding = "utf-8" ) as file :
+            file.write( json.dumps( data , indent = 4 , separators = ( " ," , ": " ) , ensure_ascii = False ) )
+    except Exception as e :
+        messagebox.showerror( lang.get("error") , e )
 
 def output() :
     output_text( cls = True )
@@ -140,42 +199,32 @@ def output() :
             sub.append(i)
         else :
             add.append(i)
-    while I < num :
-        for i in add :
-            if I < num :
-                I += i
-                ret.append( [ forge_nums_name[i] , 1 ] )
-    if I > num :
-        for i in sub :
-            if ( num - I ) % i == 0 :
-                while I == num :
-                    I += I
-                    ret.append( [ forge_nums_name[i] , 1 ] )
-    for i in [ 4 , 1 ] :
-        if ( num - I ) % i == 0 :
-            while I > num :
-                I -= i
-                match i :
-                    case 1 :
-                        ret.append( [ "forge.punch" , 1 ] )
-                        ret.append( [ "forge.hit_light" , 1 ] )
-                    case 4 :
-                        ret.append( [ "forge.upset" , 1 ] )
-                        ret.append( [ "forge.hit_hard" , 1 ] )
-    # debug
-    print(I)
-    print(num)
-    print(ret)
-    for i in ret :
-        output_text( f"{lang.get(i[0])} * {i[1]}" )
+    add.reverse()
+    for i in add :
+        while I + i <= num :
+            I += i
+            ret.append( [ forge_nums_name[i] , 1 ] )
+    if I < num :
+        I += 1
+        ret.append( [ "forge.punch" , 1 ] )
+        ret.append( [ "forge.hit_light" , 1 ] )
+    debug(I)
+    debug(num)
+    debug(ret)
+    end_forge = []
+    for i in end_combobox :
+        end_forge.append( [ i.get() , 1 ] )
+    end_forge.reverse()
+    ret = [ [ lang.get(i[0]) , i[1] ] for i in ret ]
+    for i in join( ret ) :
+        output_text( f"{i[0]} * {i[1]}" )
     output_text()
-    for i in range( len( end_combobox ) - 1 , -1 , -1 ) :
-        output_text( f"{ end_combobox[i].get() } * 1" )
-def close( event ) :
-    root.destroy()
-    quit()
-button.config( command = output )
+    for i in join( end_forge ) :
+        output_text( f"{i[0]} * {i[1]}" )
+
+output_button.config( command = output )
+load_button.config( command = load )
+save_button.config( command = save )
 root.bind( "<B3-Motion>" , move )
 root.bind( "<Button-3>" , get_point )
-root.bind( "<Escape>" , close )
 root.mainloop()
