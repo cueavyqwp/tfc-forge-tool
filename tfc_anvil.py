@@ -1,9 +1,9 @@
-from tkinter import ttk
+from tkinter import scrolledtext , ttk
 import tkinter as tk
 import json
 import pip
 
-font = ( "Consolas" , 14 , "bold" )
+font = ( "Consolas" , 20 , "bold" )
 
 while 1 :
     try :
@@ -34,7 +34,7 @@ for i in data["item"] :
     item[ get_name(i) ] = value
 forge_nums = { i[1] : i[0] for i in forge.values() }
 
-combobox = ttk.Combobox( root , justify = tk.CENTER )
+combobox = ttk.Combobox( root )
 combobox["value"] = tuple( item.keys() )
 combobox["state"] = "readonly"
 combobox.current(0)
@@ -51,17 +51,21 @@ start_text_init()
 frame_start.pack( fill = tk.X )
 
 button = ttk.Button( root , text = lang.get("output") )
-button.pack( side = tk.BOTTOM )
+button.pack( side = tk.BOTTOM , fill = "x" )
 
-text = tk.Text( root , font = font )
+text = scrolledtext.ScrolledText( root , relief = tk.RIDGE , font = font )
 text.pack( anchor = tk.CENTER , fill = tk.BOTH )
-def output_text( info = "" , end = "\n" ) :
+def output_text( info = "" , end = "\n" , cls = False ) :
     text.config( state = tk.NORMAL )
-    text.insert( tk.END , info + end )
+    if cls :
+        text.delete( "0.0" , tk.END )
+    else :
+        text.insert( tk.END , str( info ) + end )
     text.config( state = tk.DISABLED )
 output_text("")
 
 def output() :
+    output_text( cls = True )
     num = item[ combobox.get() ]
     while 1 :
         try :
@@ -70,7 +74,6 @@ def output() :
             break
         except :
             start_text_init()
-    print(num)
+    output_text(num)
 button.config( command = output )
-
 root.mainloop()
