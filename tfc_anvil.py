@@ -147,7 +147,7 @@ def load() :
         for i in range(3) :
             num = list( forge_nums.keys() ).index( data["end"][i] )
             end_combobox[i].current( num )
-        output_text( cls = True )
+        output()
     except Exception as e :
         messagebox.showerror( lang.get("error") , e )
 
