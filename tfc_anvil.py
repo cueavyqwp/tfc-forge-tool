@@ -58,14 +58,14 @@ forge_nums_name = { v : k for k , v in forge_nums.items() }
 
 info_frame = tk.Frame()
 
-load_button = ttk.Button( info_frame , text = lang.get( "load" ) )
-load_button.pack( side = tk.RIGHT , anchor=tk.E , fill = tk.BOTH )
-
-output_button = ttk.Button( root , text = lang.get("output") )
-output_button.pack( side = tk.BOTTOM , fill =  tk.X )
+output_button = ttk.Button( info_frame , text = lang.get( "output" ) )
+output_button.pack( side = tk.RIGHT , anchor=tk.E , fill = tk.BOTH )
 
 save_button = ttk.Button( root , text = lang.get("save") )
 save_button.pack( side = tk.BOTTOM , fill =  tk.X )
+
+load_button = ttk.Button( root , text = lang.get("load") )
+load_button.pack( side = tk.BOTTOM , fill =  tk.X )
 
 start_frame = tk.Frame(info_frame)
 tk.Label( start_frame , text = lang.get("start") ).pack( side = tk.LEFT )
@@ -147,6 +147,7 @@ def load() :
         for i in range(3) :
             num = list( forge_nums.keys() ).index( data["end"][i] )
             end_combobox[i].current( num )
+        output_text( cls = True )
     except Exception as e :
         messagebox.showerror( lang.get("error") , e )
 
@@ -182,15 +183,12 @@ def output() :
             break
         except :
             end_text_init()
-    num = end-start
+    num = end
     for i in end_combobox :
         num -= forge_nums[ forge_name[ i.get() ] ]
-    if num <= 0 or num >= 150 :
-        output_text( "error" , cls = True )
-        return
     l = list( forge_nums.values() )
     l.sort()
-    I = 0
+    I = start
     ret = []
     add = []
     sub = []
@@ -201,16 +199,28 @@ def output() :
             add.append(i)
     add.reverse()
     for i in add :
-        while I + i <= num :
+        while ( I + i <= num ) and ( I + i <= 150 ) :
             I += i
             ret.append( [ forge_nums_name[i] , 1 ] )
-    if I < num :
+            print(I)
+    for i in sub :
+        while ( I + i >= num ) and ( I + i >= 0 ) :
+            I += i
+            ret.append( [ forge_nums_name[i] , 1 ] )
+            print(I)
+    while I < num :
         I += 1
+        ret.append( [ "forge.punch" , 2 ] )
+        ret.append( [ "forge.hit_light" , 1 ] )
+    while I > num :
+        I -= 1
         ret.append( [ "forge.punch" , 1 ] )
         ret.append( [ "forge.hit_light" , 1 ] )
-    debug(I)
-    debug(num)
-    debug(ret)
+    debug( f"{I}|{num}|{end}" )
+    debug( [ i[0] for i in ret ] )
+    if num <= 0 or num >= 150 :
+        output_text( "error" , cls = True )
+        return
     end_forge = []
     for i in end_combobox :
         end_forge.append( [ i.get() , 1 ] )
