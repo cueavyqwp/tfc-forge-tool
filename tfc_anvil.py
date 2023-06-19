@@ -202,12 +202,10 @@ def output() :
         while ( I + i <= num ) and ( I + i <= 150 ) :
             I += i
             ret.append( [ forge_nums_name[i] , 1 ] )
-            print(I)
     for i in sub :
         while ( I + i >= num ) and ( I + i >= 0 ) :
             I += i
             ret.append( [ forge_nums_name[i] , 1 ] )
-            print(I)
     while I < num :
         I += 1
         ret.append( [ "forge.punch" , 2 ] )
