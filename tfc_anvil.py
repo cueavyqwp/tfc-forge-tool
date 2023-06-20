@@ -3,25 +3,24 @@ from tkinter.ttk import Combobox , Button , Entry
 from tkinter.scrolledtext import ScrolledText
 from tkinter.messagebox import showerror
 from tkinter import Frame , Label , Tk
-from json import dumps , load
-from os.path import exists
-from os import mkdir
-from pip import main
+import json
+import pip
+import os
 
+is_debug = True
 font = ( "Consolas" , 18 , "bold" )
 
 while 1 :
     try :
-        from langful import lang
+        import langful
         break
     except :
-        main( [ "install" , "langful" ] )
-if not exists( ".\\save" ) :
-    mkdir( ".\\save" )
-del exists , mkdir , main
+        pip.main( [ "install" , "langful" ] )
+save_path = os.path.join( os.path.split(__file__)[0] , "save" )
+if not os.path.exists( save_path ) :
+    os.mkdir( save_path )
 
-is_debug = True
-lang = lang( default_lang = "en_us" , file_type = "lang" )
+lang = langful.lang( lang_dir = os.path.join( os.path.split(__file__)[0] , "lang" ) , default_lang = "en_us" , file_type = "lang" )
 root = Tk()
 root.title( lang.get("title") )
 root.geometry( f"400x700" )
@@ -96,8 +95,6 @@ def output_text( info = "" , end = "\n" , cls = False ) :
     text.config( state = "disabled" )
 output_text("")
 
-del font , Combobox , Button , Entry , Frame , Label , Tk
-
 def debug( text ) :
     if is_debug :
         print( text )
@@ -119,7 +116,7 @@ def file_load() :
     debug(path)
     try :
         with open( path , encoding = "utf-8" ) as file :
-            data = load( file )
+            data = json.load( file )
         start , end = data["pos"]
         start_text_init( start )
         end_text_init( end )
@@ -142,7 +139,7 @@ def file_save() :
     debug(data)
     try :
         with open( path , "w" , encoding = "utf-8" ) as file :
-            file.write( dumps( data , indent = 4 , separators = ( " ," , ": " ) , ensure_ascii = False ) )
+            file.write( json.dumps( data , indent = 4 , separators = ( " ," , ": " ) , ensure_ascii = False ) )
     except Exception as e :
         showerror( lang.get("error") , e )
 
