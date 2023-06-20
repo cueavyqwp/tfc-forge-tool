@@ -109,8 +109,8 @@ def join( list ) :
             ret.append(i)
     return ret
 
-def file_load() :
-    path = askopenfilename( initialdir = ".\\save" )
+def load() :
+    path = askopenfilename( initialdir = save_path )
     if not path :
         return
     debug(path)
@@ -127,11 +127,12 @@ def file_load() :
     except Exception as e :
         showerror( lang.get("error") , e )
 
-def file_save() :
-    path = asksaveasfilename( initialdir = ".\\save" , initialfile = "data" , filetypes = [ [ "JSON" , ".json" ] ] )
+def save() :
+    path = asksaveasfilename( initialdir = save_path , initialfile = "" , filetypes = [ [ "JSON" , ".json" ] ], )
     if not path :
         return
-    path += ".json"
+    if ( len( path ) < 5 ) or ( ".json" not in path ) :
+        path += ".json"
     debug(path)
     data = {}
     data["pos"] = [ start_text.get() , end_text.get() ]
@@ -147,15 +148,13 @@ def output() :
     output_text( cls = True )
     while 1 :
         try :
-            start = start_text.get()
-            start = int(start)
+            start = int( start_text.get() )
             break
         except :
             start_text_init()
     while 1 :
         try :
-            end = end_text.get()
-            end = int(end)
+            end = int( end_text.get() )
             break
         except :
             end_text_init()
@@ -174,14 +173,15 @@ def output() :
         else :
             add.append(i)
     add.reverse()
-    for i in add :
-        while ( I + i <= num ) and ( I + i <= 150 ) :
-            I += i
-            ret.append( [ forge_nums()[i] , 1 ] )
-    for i in sub :
-        while ( I + i >= num ) and ( I + i >= 0 ) :
-            I += i
-            ret.append( [ forge_nums()[i] , 1 ] )
+    for i in add + sub :
+        if i < 0 :
+            while ( I + i >= num ) and ( I + i >= 0 ) :
+                I += i
+                ret.append( [ forge_nums()[i] , 1 ] )
+        else :
+            while ( I + i <= num ) and ( I + i <= 150 ) :
+                I += i
+                ret.append( [ forge_nums()[i] , 1 ] )
     while I != num :
         ret.append( [ "forge.hit_light" , 1 ] )
         if I < num :
@@ -192,6 +192,7 @@ def output() :
             ret.append( [ "forge.punch" , 1 ] )
     debug( f"{I}|{num}|{end}" )
     debug( [ i[0] for i in ret ] )
+
     if num <= 0 or num >= 150 :
         output_text( "error" , cls = True )
         return
@@ -200,6 +201,7 @@ def output() :
         end_forge.append( [ i.get() , 1 ] )
     end_forge.reverse()
     ret = [ [ lang.get(i[0]) , i[1] ] for i in ret ]
+
     for i in join( ret ) :
         output_text( f"{i[0]} * {i[1]}" )
     output_text()
@@ -207,6 +209,6 @@ def output() :
         output_text( f"{i[0]} * {i[1]}" )
 
 output_button.config( command = output )
-load_button.config( command = file_load )
-save_button.config( command = file_save )
+load_button.config( command = load )
+save_button.config( command = save )
 root.mainloop()
