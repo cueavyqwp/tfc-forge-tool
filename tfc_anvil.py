@@ -20,7 +20,7 @@ save_path = os.path.join( os.path.split(__file__)[0] , "save" )
 if not os.path.exists( save_path ) :
     os.mkdir( save_path )
 
-lang = langful.lang( lang_dir = os.path.join( os.path.split(__file__)[0] , "lang" ) , default_lang = "en_us" , file_type = "lang" )
+lang = langful.lang( lang_dir = os.path.join( os.path.split(__file__)[0] , "lang" ) )
 root = Tk()
 root.title( lang.get("title") )
 root.geometry( f"400x700" )
