@@ -16,15 +16,16 @@ while 1 :
         break
     except :
         pip.main( [ "install" , "langful" ] )
+
 save_path = os.path.join( os.path.split( __file__ )[ 0 ] , "save" )
 if not os.path.exists( save_path ) :
     os.mkdir( save_path )
 
-lang = langful.lang( lang_dir = os.path.join( os.path.split( __file__ )[ 0 ] , "lang" ) )
+lang = langful.lang( os.path.join( os.path.split( __file__ )[ 0 ] , "lang" ) )
 root = Tk()
 root.title( lang[ "title" ] )
 root.geometry( f"400x700" )
-root.attributes( "-topmost" , 1 )
+root.attributes( "-topmost" , True )
 root.attributes( "-transparent" )
 root.update()
 
@@ -39,8 +40,8 @@ forge = {
     "forge.shrink" : 16
 }
 
-def forge_name() : return { lang[ i ] : i for i in forge }
-def forge_nums() : return { v : k for k , v in forge.items() }
+forge_name = { lang[ i ] : i for i in forge }
+forge_nums = { v : k for k , v in forge.items() }
 
 info_frame = Frame()
 
@@ -77,7 +78,7 @@ end_combobox = []
 Label( info_frame , text = lang[ "end" ] ).pack( side = "left" )
 for i in range( 3 ) :
     end_combobox.append( Combobox( info_frame ) )
-    end_combobox[ -1 ]["value"] = tuple( forge_name().keys() )
+    end_combobox[ -1 ]["value"] = tuple( forge_name.keys() )
     end_combobox[ -1 ]["state"] = "readonly"
     end_combobox[ -1 ].current(0)
     end_combobox[ -1 ].pack( fill = "x" )
@@ -136,7 +137,7 @@ def save() :
     debug( path )
     data = {}
     data[ "pos" ] = [ start_text.get() , end_text.get() ]
-    data[ "end" ] = [ forge_name()[ i.get() ] for i in end_combobox ]
+    data[ "end" ] = [ forge_name[ i.get() ] for i in end_combobox ]
     debug( data )
     try :
         with open( path , "w" , encoding = "utf-8" ) as file :
@@ -160,7 +161,7 @@ def output() :
             end_text_init()
     num = end
     for i in end_combobox :
-        num -= forge[ forge_name()[ i.get() ] ]
+        num -= forge[ forge_name[ i.get() ] ]
     l = list( forge.values() )
     l.sort()
     I = start
@@ -177,11 +178,11 @@ def output() :
         if i < 0 :
             while ( I + i >= num ) and ( I + i >= 0 ) :
                 I += i
-                ret.append( [ forge_nums()[ i ] , 1 ] )
+                ret.append( [ forge_nums[ i ] , 1 ] )
         else :
             while ( I + i <= num ) and ( I + i <= 150 ) :
                 I += i
-                ret.append( [ forge_nums()[ i ] , 1 ] )
+                ret.append( [ forge_nums[ i ] , 1 ] )
     while I != num :
         ret.append( [ "forge.hit_light" , 1 ] )
         if I < num :
