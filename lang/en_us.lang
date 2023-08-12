@@ -1,6 +1,6 @@
 title = forge tool
-start = start position: 
-end_p = end position: 
+pos.start = start pos: 
+pos.end = end pos: 
 output = output
 error = error
 save = save

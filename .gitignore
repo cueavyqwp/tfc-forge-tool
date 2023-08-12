@@ -1,3 +1,7 @@
-test*
-*.pyc
-save
+/*
+
+!lang
+!LICENSE
+!README.md
+!.gitignore
+!tfc_anvil.py
