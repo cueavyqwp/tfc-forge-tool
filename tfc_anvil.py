@@ -62,9 +62,9 @@ class main :
         try :
             with open( path , encoding = "utf-8" ) as file :
                 data = json.load( file )
-            for entry , num in zip( self.entry , data[ "pos" ] ) :
-                entry.delete( 0 , "end" )
-                entry.insert( 0 , str( num ) )
+            entry = self.entry[ -1 ]
+            entry.delete( 0 , "end" )
+            entry.insert( 0 , str( data[ "pos" ] ) )
             for i in range( len( self.combobox ) ) :
                 num = list( forge.keys() ).index( data[ "end" ][ i ] )
                 self.combobox[ i ].current( num )
@@ -78,7 +78,7 @@ class main :
             return
         if ( len( path ) < 5 ) or ( ".json" not in path ) :
             path += ".json"
-        data = { "pos" : self.pos , "end" : [ self.forge_name[ combobox.get() ] for combobox in self.combobox ] }
+        data = { "pos" : self.pos[ -1 ] , "end" : [ self.forge_name[ combobox.get() ] for combobox in self.combobox ] }
         try :
             with open( path , "w" , encoding = "utf-8" ) as file :
                 json.dump( data , file , indent = 4 , separators = [ " ," , ": " ] , ensure_ascii = False )
