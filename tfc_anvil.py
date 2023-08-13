@@ -66,7 +66,7 @@ class main :
             entry.delete( 0 , "end" )
             entry.insert( 0 , str( data[ "pos" ] ) )
             for i in range( len( self.combobox ) ) :
-                num = list( forge.keys() ).index( data[ "end" ][ i ] )
+                num = list( self.forge.keys() ).index( data[ "end" ][ i ] )
                 self.combobox[ i ].current( num )
             self.output()
         except Exception as e :
@@ -99,7 +99,7 @@ class main :
         l = list( self.forge.values() )
         ret = []
         for i in self.combobox :
-            end -= forge[ self.forge_name[ i.get() ] ]
+            end -= self.forge[ self.forge_name[ i.get() ] ]
         for i in sorted( l , key = lambda x : x + sum( abs( i ) for i in l ) if x < 0 else - x ) :
             if i < 0 :
                 while ( num + i >= end ) and ( num + i >= 0 ) :
