@@ -119,14 +119,14 @@ class main :
                 ret.append( [ "forge.punch" , 1 ] )
         if end <= 0 or end >= 150 :
             self.print( self.lang[ "error" ] , cls = True )
-            return
-        end_forge = []
-        for i in self.combobox :
-            end_forge.append( [ i.get() , 1 ] )
-        end_forge.reverse()
-        ret = [ [ self.lang[ i[ 0 ] ] , i[ 1 ] ] for i in ret ]
-        for i in self.join( ret ) + [ "" ] + self.join( end_forge ) :
-            self.print( i )
+        else :
+            end_forge = []
+            for i in self.combobox :
+                end_forge.append( [ i.get() , 1 ] )
+            end_forge.reverse()
+            ret = [ [ self.lang[ i[ 0 ] ] , i[ 1 ] ] for i in ret ]
+            for i in self.join( ret ) + [ "" ] + self.join( end_forge ) :
+                self.print( i )
 
     def init( self ) -> None :
         # create save dir
