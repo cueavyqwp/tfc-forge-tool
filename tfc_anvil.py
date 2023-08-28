@@ -15,6 +15,7 @@ while True :
         pip.main( [ "install" , "langful" ] )
 
 os.chdir( os.path.split( __file__ )[ 0 ] )
+
 forge = {
     "forge.hit_light" : -3 ,
     "forge.hit_medium" : -6 ,
@@ -28,9 +29,9 @@ forge = {
 
 class main :
 
-    def __init__( self , forge : dict[ str , int ] , font : list = [ "Consolas" , 18 , "bold" ] , color = True , split = True ) -> None :
+    def __init__( self , forge : dict[ str , int ] , font : list = [ "Consolas" , 18 , "bold" ] , color : bool = True , split : bool = True ) -> None :
         self.lang = langful.lang( os.path.join( os.path.split( __file__ )[ 0 ] , "lang" ) )
-        self.config = { "color" : color , "split" : split }
+        self.config = { "color" : color , "split" : [ [] , [ "" ] ][ split ] }
         self.root = tkinter.Tk()
         self.root.title( self.lang[ "title" ] )
         self.root.geometry( f"400x700" )
@@ -140,14 +141,10 @@ class main :
         if end <= 0 or end >= 150 :
             self.print( self.lang[ "error" ] , cls = True )
         else :
-            end_forge = []
-            for i in self.combobox :
-                end_forge.append( [ i.get() , 1 ] )
-            end_forge.reverse()
-            ret = [ [ self.lang[ i[ 0 ] ] , i[ 1 ] ] for i in ret ]
-            s = "\n".join( i for i in self.join( ret ) + [ [] , [ "" ] ][ self.config[ "split" ] ] + self.join( end_forge ) )
-            self.print( s )
-            self.color( s.splitlines() ) if self.config[ "color" ] else ...
+            end_forge = self.join( list( reversed( [ [ i.get() , 1 ] for i in self.combobox ] ) ) )
+            ret = self.join( [ [ self.lang[ i[ 0 ] ] , i[ 1 ] ] for i in ret ] )
+            self.print( s := "\n".join( [ i for i in ret + self.config[ "split" ] + end_forge ] ) )
+            self.color( s.splitlines() ) if self.config[ "color" ] else None
 
     def init( self ) -> None :
         self.forge_name = { self.lang[ i ] : i for i in forge }
