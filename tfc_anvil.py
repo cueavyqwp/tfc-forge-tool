@@ -14,17 +14,28 @@ while True :
     except ImportError :
         pip.main( [ "install" , "langful" ] )
 
+os.chdir( os.path.split( __file__ )[ 0 ] )
+forge = {
+    "forge.hit_light" : -3 ,
+    "forge.hit_medium" : -6 ,
+    "forge.hit_hard" : -9 ,
+    "forge.draw" : -15 ,
+    "forge.punch" : 2 ,
+    "forge.bend" : 7 ,
+    "forge.upset" : 13 ,
+    "forge.shrink" : 16
+}
+
 class main :
 
-    def __init__( self , forge : dict[ str , int ] , font : list = [ "Consolas" , 18 , "bold" ] ) -> None :
+    def __init__( self , forge : dict[ str , int ] , font : list = [ "Consolas" , 18 , "bold" ] , color = True , split = True ) -> None :
         self.lang = langful.lang( os.path.join( os.path.split( __file__ )[ 0 ] , "lang" ) )
+        self.config = { "color" : color , "split" : split }
         self.root = tkinter.Tk()
         self.root.title( self.lang[ "title" ] )
         self.root.geometry( f"400x700" )
         self.root.attributes( "-topmost" , True )
         self.root.attributes( "-transparent" )
-        self.forge_name = { self.lang[ i ] : i for i in forge }
-        self.forge_nums = { v : k for k , v in forge.items() }
         self.forge = forge
         self.font = font
         self.root.update()
@@ -93,6 +104,15 @@ class main :
         self.info.insert( "end" , str( text ) + end )
         self.info.config( state = "disabled" )
 
+    def color( self , texts : list[ str ] ) -> None :
+        for text , i in zip( texts , [ f"{ i + 1 }." for i in range( len( texts ) ) ] ) :
+            if not text : continue
+            l = len( text )
+            forge , num = [ len( s ) for s in text.split( " * " ) ]
+            [ self.info.tag_add( *value ) for value in [ [ "forge" , i + "0" , i + str( forge ) ] , [ "num" , i + str( l - num ) , i + str( l ) ] ] ]
+        self.info.tag_config( "forge" , foreground = "purple" )
+        self.info.tag_config( "num" , foreground = "yellowgreen" )
+
     def output( self , *args ) -> None :
         self.print( cls = True )
         num , end = self.pos
@@ -125,10 +145,13 @@ class main :
                 end_forge.append( [ i.get() , 1 ] )
             end_forge.reverse()
             ret = [ [ self.lang[ i[ 0 ] ] , i[ 1 ] ] for i in ret ]
-            for i in self.join( ret ) + [ "" ] + self.join( end_forge ) :
-                self.print( i )
+            s = "\n".join( i for i in self.join( ret ) + [ [] , [ "" ] ][ self.config[ "split" ] ] + self.join( end_forge ) )
+            self.print( s )
+            self.color( s.splitlines() ) if self.config[ "color" ] else ...
 
     def init( self ) -> None :
+        self.forge_name = { self.lang[ i ] : i for i in forge }
+        self.forge_nums = { v : k for k , v in forge.items() }
         # create save dir
         self.save_path = os.path.join( os.path.split( __file__ )[ 0 ] , "save" )
         if not os.path.exists( self.save_path ) :
@@ -170,15 +193,6 @@ class main :
         self.info.pack( side = "bottom" , expand = True , fill = "both" )
         self.print( cls = True )
 
-forge = {
-    "forge.hit_light" : -3 ,
-    "forge.hit_medium" : -6 ,
-    "forge.hit_hard" : -9 ,
-    "forge.draw" : -15 ,
-    "forge.punch" : 2 ,
-    "forge.bend" : 7 ,
-    "forge.upset" : 13 ,
-    "forge.shrink" : 16
-}
-root = main( forge )
-root.run()
+if __name__ == "__main__" :
+    root = main( forge )
+    root.run()
