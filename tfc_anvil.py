@@ -14,7 +14,7 @@ while True :
     except ImportError :
         pip.main( [ "install" , "langful" ] )
 
-os.chdir( os.path.split( __file__ )[ 0 ] )
+os.chdir( os.path.dirname( __file__ ) )
 
 forge = {
     "forge.hit_light" : -3 ,
@@ -49,9 +49,10 @@ class main :
     def pos( self ) -> None :
         ret = []
         for entry in self.entry :
-            num = entry.get()
             try :
-                ret.append( int( num ) )
+                i = int( entry.get() )
+                assert not ( i < 0 or i > 150 )
+                ret.append( i )
             except :
                 ret.append( 0 )
                 entry.delete( 0 , "end" )
@@ -86,8 +87,7 @@ class main :
         path += ".json" if ( len( path ) < 5 ) or ( ".json" not in path ) else None
         data = { "pos" : self.pos[ -1 ] , "end" : [ self.forge_name[ combobox.get() ] for combobox in self.combobox ] }
         try :
-            with open( path , "w" , encoding = "utf-8" ) as file :
-                json.dump( data , file , indent = 4 , separators = [ " ," , ": " ] , ensure_ascii = False )
+            with open( path , "w" , encoding = "utf-8" ) as file : json.dump( data , file , indent = 4 , separators = [ " ," , ": " ] , ensure_ascii = False )
         except Exception as e :
             tkinter.messagebox.showerror( self.lang[ "error" ] , e )
 
@@ -117,14 +117,9 @@ class main :
         ret = []
         end -= sum( self.forge[ self.forge_name[ i.get() ] ] for i in self.combobox )
         for i in sorted( l , key = lambda x : x + sum( abs( i ) for i in l ) if x < 0 else - x ) :
-            if i < 0 :
-                while ( num + i >= end ) and ( num + i >= 0 ) :
-                    num += i
-                    ret.append( [ self.forge_nums[ i ] , 1 ] )
-            else :
-                while ( num + i <= end ) and ( num + i <= 150 ) :
-                    num += i
-                    ret.append( [ self.forge_nums[ i ] , 1 ] )
+            while [ ( num + i <= end ) and ( num + i <= 150 ) , ( num + i >= end ) and ( num + i >= 0 ) ][ i < 0 ] :
+                num += i
+                ret.append( [ self.forge_nums[ i ] , 1 ] )
         while num != end :
             ret.append( [ "forge.hit_light" , 1 ] )
             if num < end :
@@ -146,14 +141,14 @@ class main :
         self.forge_name = { self.lang[ i ] : i for i in forge }
         self.forge_nums = { v : k for k , v in forge.items() }
         # create save dir
-        self.save_path = os.path.join( os.path.split( __file__ )[ 0 ] , "save" )
+        self.save_path = os.path.join( "./" , "save" )
         None if os.path.exists( self.save_path ) else os.mkdir( self.save_path )
         # frames
         top_frame = tkinter.Frame( self.root )
         option_frame = tkinter.Frame( top_frame )
         combobox_frame = tkinter.Frame( option_frame )
         # output button
-        tkinter.ttk.Button( top_frame , text = self.lang[ "output" ] , command = self.output ).pack( side = "right" , expand = True , fill = "both" )
+        tkinter.ttk.Button( top_frame , text = self.lang[ "output" ] , command = self.output ).pack( side = "right" , expand = True , fill = "both" , padx = 1 , pady = 1 )
         top_frame.pack( side = "top" , fill = "x" )
         self.root.bind( "<Return>" , self.output )
         # pos entry
@@ -164,7 +159,7 @@ class main :
             pos = tkinter.ttk.Entry( frame , font = self.font )
             pos.pack( side = "right" , expand = True , fill = "x" )
             self.entry.append( pos )
-            frame.pack( side = "top" , fill = "x" )
+            frame.pack( side = "top" , fill = "x" , padx = 1 , pady = 1 )
         self.pos
         # combobox
         tkinter.Label( combobox_frame , text = self.lang[ "end" ] ).pack( side = "left" )
@@ -172,13 +167,12 @@ class main :
         for i in range( 3 ) :
             combobox = tkinter.ttk.Combobox( combobox_frame , values = list( self.forge_name.keys() ) , state = "readonly" )
             combobox.current( 0 )
-            combobox.pack( side = "top" , expand = True , fill = "x" , ipady = 4 )
+            combobox.pack( side = "top" , expand = True , fill = "x" , padx = 1 , pady = 1 , ipady = 5 )
             self.combobox.append( combobox )
         combobox_frame.pack( side = "top" , expand = True , fill = "x" )
         option_frame.pack( side = "left" )
         # load & save button
-        for text , func in [ [ "save" , self.save ] , [ "load" , self.load ] ] :
-            tkinter.ttk.Button( option_frame , text = self.lang[ text ] , command = func ).pack( side = "top" , expand = True , fill = "both" )
+        [ tkinter.ttk.Button( option_frame , text = self.lang[ text ] , command = func ).pack( side = "top" , expand = True , fill = "both" , padx = 1 , pady = 1 ) for text , func in [ [ "save" , self.save ] , [ "load" , self.load ] ] ]
         # info text
         self.info = tkinter.scrolledtext.ScrolledText( self.root , relief = "ridge" , font = self.font )
         self.info.pack( side = "bottom" , expand = True , fill = "both" )

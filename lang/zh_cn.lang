@@ -1,6 +1,6 @@
 title = 锻造工具
-pos.start = 起始位置: 
-pos.end = 结束位置: 
+pos.start = 起始位置:
+pos.end = 结束位置:
 output = 输出
 error = 错误
 save = 保存
