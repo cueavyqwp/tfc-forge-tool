@@ -68,7 +68,7 @@ class main :
                 ret.append( i )
         return [ f"{ name } * { num }" for name , num in ret ]
 
-    def load( self ) -> None :
+    def load( self , *args ) -> None :
         path = tkinter.filedialog.askopenfilename( initialdir = self.save_path )
         if not path : return
         try :
@@ -81,7 +81,7 @@ class main :
         except Exception as e :
             tkinter.messagebox.showerror( self.lang[ "error" ] , e )
 
-    def save( self ) -> None :
+    def save( self , *args ) -> None :
         path = tkinter.filedialog.asksaveasfilename( initialdir = self.save_path , initialfile = "" , filetypes = [ [ "JSON" , ".json" ] ] )
         if not path : return
         path += ".json" if ( len( path ) < 5 ) or ( ".json" not in path ) else None
@@ -107,8 +107,7 @@ class main :
             if not text : continue
             forge , num = [ len( s ) for s in text.split( " * " ) ]
             [ self.info.tag_add( *value ) for value in [ [ "forge" , i + "0" , i + str( forge ) ] , [ "num" , i + str( len( text ) - num ) , i + str( len( text ) ) ] ] ]
-        self.info.tag_config( "forge" , foreground = "purple" )
-        self.info.tag_config( "num" , foreground = "yellowgreen" )
+        [ self.info.tag_config( name , foreground = color ) for name , color in [ [ "forge" , "purple" ] , [ "num" , "yellowgreen" ] ] ]
 
     def output( self , *args ) -> None :
         self.cls()
@@ -150,7 +149,6 @@ class main :
         # output button
         tkinter.ttk.Button( top_frame , text = self.lang[ "output" ] , command = self.output ).pack( side = "right" , expand = True , fill = "both" , padx = 1 , pady = 1 )
         top_frame.pack( side = "top" , fill = "x" )
-        self.root.bind( "<Return>" , self.output )
         # pos entry
         self.entry = []
         for name in [ "pos.start" , "pos.end" ] :
@@ -177,6 +175,8 @@ class main :
         self.info = tkinter.scrolledtext.ScrolledText( self.root , relief = "ridge" , font = self.font )
         self.info.pack( side = "bottom" , expand = True , fill = "both" )
         self.cls()
+        # key bindings
+        [ self.root.bind( f"<{ key }>" , func ) for key , func in [ [ "Return" , self.output ] , [ "Control-l" , self.load ] , [ "Control-s" , self.save ] ] ]
 
 if __name__ == "__main__" :
     root = main( forge )
