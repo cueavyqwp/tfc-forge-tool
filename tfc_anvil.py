@@ -4,17 +4,18 @@ import tkinter.filedialog
 import tkinter.ttk
 import tkinter
 import json
-import pip
 import os
+
+os.chdir( os.path.dirname( __file__ ) )
 
 while True :
     try :
         import langful
         break
-    except ImportError :
-        pip.main( [ "install" , "langful" ] )
-
-os.chdir( os.path.dirname( __file__ ) )
+    except ModuleNotFoundError :
+        import subprocess
+        import sys
+        subprocess.check_call( [ sys.executable , "-m" , "pip" , "install" , "langful" ] )
 
 forge = {
     "forge.hit_light" : -3 ,
@@ -35,9 +36,7 @@ class main :
         self.root = tkinter.Tk()
         self.root.title( self.lang[ "title" ] )
         self.root.geometry( f"400x700" )
-        if os.name == "nt" :
-            self.root.attributes( "-topmost" , True )
-            self.root.attributes( "-transparent" )
+        [ self.root.attributes( *args ) for args in [ [ "-topmost" , True ] , [ "-transparent" ] ] ] if os.name == "nt" else None
         self.forge = forge
         self.font = font
 
@@ -91,7 +90,7 @@ class main :
         except Exception as e :
             tkinter.messagebox.showerror( self.lang[ "error" ] , e )
 
-    def cls( self ) -> None :
+    def cls( self , *args ) -> None :
         self.info.config( state = "normal" )
         self.info.delete( 0.0 , "end" )
         self.info.config( state = "disabled" )
@@ -140,15 +139,12 @@ class main :
         self.forge_name = { self.lang[ i ] : i for i in forge }
         self.forge_nums = { v : k for k , v in forge.items() }
         # create save dir
-        self.save_path = os.path.join( "./" , "save" )
+        self.save_path = os.path.join( "." , "save" )
         None if os.path.exists( self.save_path ) else os.mkdir( self.save_path )
         # frames
         top_frame = tkinter.Frame( self.root )
         option_frame = tkinter.Frame( top_frame )
         combobox_frame = tkinter.Frame( option_frame )
-        # output button
-        tkinter.ttk.Button( top_frame , text = self.lang[ "output" ] , command = self.output ).pack( side = "right" , expand = True , fill = "both" , padx = 1 , pady = 1 )
-        top_frame.pack( side = "top" , fill = "x" )
         # pos entry
         self.entry = []
         for name in [ "pos.start" , "pos.end" ] :
@@ -162,21 +158,25 @@ class main :
         # combobox
         tkinter.Label( combobox_frame , text = self.lang[ "end" ] ).pack( side = "left" )
         self.combobox = []
-        for i in range( 3 ) :
+        for _ in range( 3 ) :
             combobox = tkinter.ttk.Combobox( combobox_frame , values = list( self.forge_name.keys() ) , state = "readonly" )
             combobox.current( 0 )
             combobox.pack( side = "top" , expand = True , fill = "x" , padx = 1 , pady = 1 , ipady = 5 )
             self.combobox.append( combobox )
-        combobox_frame.pack( side = "top" , expand = True , fill = "x" )
+        # pack frames
+        top_frame.pack( side = "top" , fill = "x" )
         option_frame.pack( side = "left" )
+        combobox_frame.pack( side = "top" , expand = True , fill = "x" )
         # load & save button
         [ tkinter.ttk.Button( option_frame , text = self.lang[ text ] , command = func ).pack( side = "top" , expand = True , fill = "both" , padx = 1 , pady = 1 ) for text , func in [ [ "save" , self.save ] , [ "load" , self.load ] ] ]
+        # output button
+        tkinter.ttk.Button( top_frame , text = self.lang[ "output" ] , command = self.output ).pack( side = "right" , expand = True , fill = "both" , padx = 1 , pady = 1 )
         # info text
         self.info = tkinter.scrolledtext.ScrolledText( self.root , relief = "ridge" , font = self.font )
         self.info.pack( side = "bottom" , expand = True , fill = "both" )
         self.cls()
         # key bindings
-        [ self.root.bind( f"<{ key }>" , func ) for key , func in [ [ "Return" , self.output ] , [ "Control-l" , self.load ] , [ "Control-s" , self.save ] ] ]
+        [ self.root.bind( f"<{ key }>" , func ) for key , func in [ [ "Return" , self.output ] , [ "Control-l" , self.load ] , [ "Control-s" , self.save ] , [ "Delete" , self.cls ] ] ]
 
 if __name__ == "__main__" :
     root = main( forge )
