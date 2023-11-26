@@ -8,7 +8,7 @@ import os
 
 os.chdir( os.path.dirname( __file__ ) )
 
-while True :
+for _ in range( 3 ) :
     try :
         import langful
         break
@@ -16,6 +16,8 @@ while True :
         import subprocess
         import sys
         subprocess.check_call( [ sys.executable , "-m" , "pip" , "install" , "langful" ] )
+else :
+    raise ImportError( "can't import or install module" )
 
 forge = {
     "forge.hit_light" : -3 ,
@@ -34,15 +36,23 @@ class main :
         self.config = { "color" : color , "split" : [ [] , [ "" ] ][ split ] }
         self.lang = langful.lang()
         self.root = tkinter.Tk()
+        self.root.protocol( "WM_DELETE_WINDOW" , self.exit )
         self.root.title( self.lang[ "title" ] )
         self.root.geometry( f"400x700" )
         [ self.root.attributes( *args ) for args in [ [ "-topmost" , True ] , [ "-transparent" ] ] ] if os.name == "nt" else None
         self.forge = forge
         self.font = font
 
+    def exit( self , code = None ) -> None :
+        self.root.destroy()
+        exit( code )
+
     def run( self ) -> None :
         self.init()
-        self.root.mainloop()
+        try :
+            self.root.mainloop()
+        except KeyboardInterrupt :
+            self.exit()
 
     @property
     def pos( self ) -> list :
