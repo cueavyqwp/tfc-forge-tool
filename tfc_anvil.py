@@ -45,7 +45,7 @@ class main :
         self.root.mainloop()
 
     @property
-    def pos( self ) -> None :
+    def pos( self ) -> list :
         ret = []
         for entry in self.entry :
             try :
@@ -78,17 +78,17 @@ class main :
             [ self.combobox[ i ].current( list( self.forge.keys() ).index( data[ "end" ][ i ] ) ) for i in range( len( self.combobox ) ) ]
             self.output()
         except Exception as e :
-            tkinter.messagebox.showerror( self.lang[ "error" ] , e )
+            tkinter.messagebox.showerror( self.lang[ "error" ] , str( e ) )
 
     def save( self , *args ) -> None :
-        path = tkinter.filedialog.asksaveasfilename( initialdir = self.save_path , initialfile = "" , filetypes = [ [ "JSON" , ".json" ] ] )
+        path = tkinter.filedialog.asksaveasfilename( initialdir = self.save_path , initialfile = "" , filetypes = [ ( "JSON" , ".json" ) ] )
         if not path : return
-        path += ".json" if ( len( path ) < 5 ) or ( ".json" not in path ) else None
+        if ( len( path ) < 5 ) or ( ".json" not in path ) : path += ".json"
         data = { "pos" : self.pos[ -1 ] , "end" : [ self.forge_name[ combobox.get() ] for combobox in self.combobox ] }
         try :
-            with open( path , "w" , encoding = "utf-8" ) as file : json.dump( data , file , indent = 4 , separators = [ " ," , ": " ] , ensure_ascii = False )
+            with open( path , "w" , encoding = "utf-8" ) as file : json.dump( data , file , indent = 4 , separators = ( " ," , ": " ) , ensure_ascii = False )
         except Exception as e :
-            tkinter.messagebox.showerror( self.lang[ "error" ] , e )
+            tkinter.messagebox.showerror( self.lang[ "error" ] , str( e ) )
 
     def cls( self , *args ) -> None :
         self.info.config( state = "normal" )
