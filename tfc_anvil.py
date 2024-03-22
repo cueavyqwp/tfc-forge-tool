@@ -5,21 +5,12 @@ import tkinter.ttk
 import traceback
 import tkinter
 import typing
+import locale
 import json
 import os
+import re
 
 os.chdir( os.path.dirname( __file__ ) )
-
-for _ in range( 3 ) :
-    try :
-        import langful
-        break
-    except ModuleNotFoundError :
-        import subprocess
-        import sys
-        subprocess.check_call( [ sys.executable , "-m" , "pip" , "install" , "langful" ] )
-else :
-    raise ImportError( "can't import or install module" )
 
 forge = {
     "forge.hit_light" : -3 ,
@@ -32,12 +23,43 @@ forge = {
     "forge.shrink" : 16
 }
 
+class lang :
+
+    def __init__( self , path : str = "lang" , default : str = "en_us" ) -> None :
+        self.languages : dict[ str , dict[ str , str ] ] = {}
+        # get language code
+        try :
+            code = __import__( "_locale" )._getdefaultlocale()[ 0 ]
+        except ( ModuleNotFoundError , AttributeError ) :
+            code = locale.getlocale()[ 0 ]
+        if os.name == "nt" and code and code[ : 2 ] == "0x" :
+            code = locale.windows_locale[ int( code , 0 ) ]
+        self.locale = str( code ).replace( "-" , "_" ).lower()
+        # init
+        for file in os.listdir( path ) :
+            file = os.path.join( path , file )
+            if not os.path.isfile( file ) or os.path.splitext( file )[ -1 ] != ".lang" : continue
+            with open( file , "r" , encoding = "utf-8" ) as fp : data = fp.read()
+            language = {}
+            for line in data.split( "\n" ) :
+                try : language.update( dict( [ re.split( "\\s+=\\s+|\\s+=|=\\s+|=" , line.split( "#" )[ 0 ] , 1 ) ] ) )
+                except ValueError : continue
+            self.languages[ os.path.splitext( os.path.split( file )[ -1 ] )[ 0 ] ] = language
+        if self.locale not in self.languages : self.locale = default
+
+    @property
+    def language( self ) -> dict[ str , str ] :
+        return self.languages[ self.locale ]
+
+    def __getitem__( self , key : str ) -> str :
+        return str( self.language.get( key ) )
+
 class main :
 
     def __init__( self , forge : dict[ str , int ] , font : list = [ "Microsoft YaHei" , 16 , "bold" ] , color : bool = True , split : bool = True ) -> None :
         self.config = { "color" : color , "split" : [ [] , [ "" ] ][ split ] }
-        self.lang = langful.lang()
         self.root = tkinter.Tk()
+        self.lang = lang()
         if os.name == "nt" : self.root.attributes( "-topmost" , True )
         self.root.protocol( "WM_DELETE_WINDOW" , self.exit )
         self.root.title( self.lang[ "title" ] )
