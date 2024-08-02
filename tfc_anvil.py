@@ -185,13 +185,13 @@ class main :
         self.save_path = os.path.join( "." , "save" )
         None if os.path.exists( self.save_path ) else os.mkdir( self.save_path )
         # frames
-        top_frame = tkinter.Frame( self.root )
-        option_frame = tkinter.Frame( top_frame )
-        combobox_frame = tkinter.Frame( option_frame )
+        frame_top = tkinter.Frame( self.root )
+        frame_option = tkinter.Frame( frame_top )
+        frame_combobox = tkinter.Frame( frame_option )
         # pos entry
         self.entry : list[ tkinter.ttk.Entry ] = []
         for name in [ "pos.start" , "pos.end" ] :
-            frame = tkinter.Frame( option_frame )
+            frame = tkinter.Frame( frame_option )
             tkinter.Label( frame , text = self.lang[ name ] ).pack( side = "left" , fill = "x" )
             pos = tkinter.ttk.Entry( frame , font = self.font )
             pos.pack( side = "right" , expand = True , fill = "x" )
@@ -199,21 +199,21 @@ class main :
             frame.pack( side = "top" , fill = "x" , padx = 1 , pady = 1 )
         self.pos
         # combobox
-        tkinter.Label( combobox_frame , text = self.lang[ "end" ] ).pack( side = "left" )
+        tkinter.Label( frame_combobox , text = self.lang[ "end" ] ).pack( side = "left" )
         self.combobox : list[ tkinter.ttk.Combobox ] = []
         for _ in range( 3 ) :
-            combobox = tkinter.ttk.Combobox( combobox_frame , values = list( self.forge_name.keys() ) , state = "readonly" )
+            combobox = tkinter.ttk.Combobox( frame_combobox , values = list( self.forge_name.keys() ) , state = "readonly" )
             combobox.current( 0 )
             combobox.pack( side = "top" , expand = True , fill = "x" , padx = 1 , pady = 1 , ipady = 5 )
             self.combobox.append( combobox )
         # output button
-        tkinter.ttk.Button( top_frame , text = self.lang[ "output" ] , command = self.output ).pack( side = "right" , expand = True , fill = "both" , padx = 1 , pady = 1 )
+        tkinter.ttk.Button( frame_top , text = self.lang[ "output" ] , command = self.output ).pack( side = "right" , expand = True , fill = "both" , padx = 1 , pady = 1 )
         # pack frames
-        top_frame.pack( side = "top" , fill = "x" )
-        option_frame.pack( side = "left" )
-        combobox_frame.pack( side = "top" , expand = True , fill = "x" )
+        frame_top.pack( side = "top" , fill = "x" )
+        frame_option.pack( side = "left" )
+        frame_combobox.pack( side = "top" , expand = True , fill = "x" )
         # load & save button
-        [ tkinter.ttk.Button( option_frame , text = self.lang[ text ] , command = func ).pack( side = "top" , expand = True , fill = "both" , padx = 1 , pady = 1 ) for text , func in [ [ "save" , self.save ] , [ "load" , self.load ] ] ]
+        [ tkinter.ttk.Button( frame_option , text = self.lang[ text ] , command = func ).pack( side = "top" , expand = True , fill = "both" , padx = 1 , pady = 1 ) for text , func in [ [ "save" , self.save ] , [ "load" , self.load ] ] ]
         # info text
         self.info = tkinter.scrolledtext.ScrolledText( self.root , relief = "ridge" , font = self.font )
         self.info.pack( side = "bottom" , expand = True , fill = "both" )

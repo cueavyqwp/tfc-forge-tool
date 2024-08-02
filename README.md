@@ -1,8 +1,38 @@
 <div align="center">
-<h1>锻造工具</h1>
-为<a href="https://github.com/TerraFirmaCraft/TerraFirmaCraft">TerraFirmaCraft</a>模组写的锻造工具
-<hr>
-<h2>资源包</h2>
-<a href="./assets/Forge-Tool-1.12.zip">1.12.2</a>|<a href="./assets/Forge-Tool-1.18.zip">1.18.2</a>
-<hr>
-</dev>
+
+# 锻造工具
+
+为[TerraFirmaCraft](https://github.com/TerraFirmaCraft/TerraFirmaCraft)模组写的锻造工具
+
+---
+
+## 资源包
+[1.7.10](./assets/Forge-Tool-1.7.zip)|[1.12.2](./assets/Forge-Tool-1.12.zip)|[1.18.2](./assets/Forge-Tool-1.18.zip)|[1.20.1](./assets/Forge-Tool-1.20.zip)
+
+---
+
+</div>
+
+## 使用说明
+
+使用前先从[上方](#资源包)安装对应版本资源包
+
+### 操作界面
+
+- **起始位置** : 即绿色箭头位置
+- **结束位置** : 既红色箭头位置
+- **末尾** : 分为三个下拉框,从上到下分别为`末尾` `倒数第二` `倒数第三` 要是有空的选择任意操作都行
+- **输出** : 点击后会将锻造步骤输出到下方文本框内
+
+### 保存与加载
+
+输入好数据之后点击保存按钮即可保存为JSON文件
+
+点击加载按钮选择保存好的JSON文件即可加载(不会改变起始位置)
+
+### 快捷键
+
+- `Ctrl+l` : 加载
+- `Ctrl+s` : 保存
+- `Enter` : 输出
+- `Delete` : 清空
