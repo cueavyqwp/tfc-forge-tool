@@ -16,3 +16,4 @@ forge.punch = 冲压
 forge.bend = 弯曲
 forge.upset = 镦锻
 forge.shrink = 收缩
+forge.any = 任意

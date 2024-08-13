@@ -3,12 +3,12 @@ import tkinter.messagebox
 import tkinter.filedialog
 import tkinter.ttk
 import traceback
+import itertools
 import tkinter
 import typing
 import locale
 import json
 import os
-import re
 
 os.chdir( os.path.dirname( __file__ ) )
 
@@ -41,23 +41,20 @@ class lang :
             if not os.path.isfile( file ) or os.path.splitext( file )[ -1 ] != ".lang" : continue
             with open( file , "r" , encoding = "utf-8" ) as fp : data = fp.read()
             language = {}
-            for line in data.split( "\n" ) :
-                try : language.update( dict( [ re.split( "\\s+=\\s+|\\s+=|=\\s+|=" , line.split( "#" )[ 0 ] , 1 ) ] ) )
-                except ValueError : continue
+            for line in data.splitlines() :
+                line = line.partition( "#" )[ 0 ]
+                key , sep , value = line.partition( "=" )
+                if sep : language[ key.strip() ] = value.strip()
             self.languages[ os.path.splitext( os.path.split( file )[ -1 ] )[ 0 ] ] = language
         if self.locale not in self.languages : self.locale = default
 
-    @property
-    def language( self ) -> dict[ str , str ] :
-        return self.languages[ self.locale ]
-
     def __getitem__( self , key : str ) -> str :
-        return str( self.language.get( key ) )
+        return str( self.languages[ self.locale ].get( key ) )
 
 class main :
 
     def __init__( self , forge : dict[ str , int ] , font : list = [ "Microsoft YaHei" , 16 , "bold" ] , color : bool = True , split : bool = True ) -> None :
-        self.config = { "color" : color , "split" : [ [] , [ "" ] ][ split ] }
+        self.config = { "color" : color , "split" : split }
         self.root = tkinter.Tk()
         self.lang = lang()
         if os.name == "nt" : self.root.attributes( "-topmost" , True )
@@ -93,14 +90,14 @@ class main :
                 entry.insert( 0 , "0" )
         return ret
 
-    def join( self , list : list ) -> list[ str ] :
+    def join( self , list : list[ list ] ) -> list[ str ] :
         ret = [ list[ 0 ] ]
         for i in list[ 1 : ] :
             if ret[ -1 ][ 0 ] == i[ 0 ] :
                 ret[ -1 ][ -1 ] += i[ -1 ]
             else :
                 ret.append( i )
-        return [ f"{ name } * { num }" for name , num in ret ]
+        return [ f"{ self.lang[ name ] } * { num }" for name , num in ret ]
 
     def trydo( self , func : typing.Callable ) -> None :
         try : func( self )
@@ -144,38 +141,81 @@ class main :
             self.info.insert( "end" , str( text ) )
         self.info_edit( func )
 
-    def color( self , texts : list[ str ] ) -> None :
-        for text , i in zip( texts , [ f"{ i + 1 }." for i in range( len( texts ) ) ] ) :
-            if not text : continue
-            forge , num = [ len( s ) for s in text.split( " * " ) ]
-            [ self.info.tag_add( *value ) for value in [ [ "forge" , i + "0" , i + str( forge ) ] , [ "num" , i + str( len( text ) - num ) , i + str( len( text ) ) ] ] ]
-        [ self.info.tag_config( name , foreground = color ) for name , color in [ [ "forge" , "purple" ] , [ "num" , "yellowgreen" ] ] ]
+    def get_steps( self , data : list ) -> int :
+        ret = 0
+        for item in data : ret += item[ 1 ]
+        return ret
+
+    def possible_way( self , end : int , *args : str | list[ str ] ) -> tuple[ tuple[ str , ... ] , ... ] :
+        values = []
+        ret = []
+        for arg in args :
+            if isinstance( arg , str ) : values.append( [ arg ] )
+            else : values.append( arg )
+        for comb in itertools.product( *values ) :
+            num = sum( self.forge[ i ] for i in comb ) + end
+            if num < 0 or num > 150 : continue
+            ret.append( comb )
+        return tuple( ret )
+
+    def calc( self , start : int , end : int ) -> None | list[ list[ str | int ] ] :
+        ret = []
+        for i in sorted( self.forge.values() , key = lambda x : x + sum( abs( i ) for i in self.forge.values() ) if x < 0 else - x ) :
+            while [ ( start + i <= end ) and ( start + i <= 150 ) , ( start + i >= end ) and ( start + i >= 0 ) ][ i < 0 ] :
+                start += i
+                ret.append( [ self.forge_nums[ i ] , 1 ] )
+        while start != end :
+            ret.append( [ "forge.hit_light" , 1 ] )
+            if start < end :
+                start += 1
+                ret.append( [ "forge.punch" , 2 ] )
+            else :
+                start -= 1
+                ret.append( [ "forge.punch" , 1 ] )
+        if end <= 0 or end >= 150 :
+            return None
+        return ret
+
+    def calc_get( self ) -> None | tuple[ list , list ]:
+        start , end = self.pos
+        args : list[ str | list[ str ] ] = []
+        for name in ( i.get() for i in self.combobox ) :
+            if name == self.lang[ "forge.any" ] : args.append( list( self.forge.keys() ) )
+            else : args.append( self.forge_name[ name ] )
+        ways = self.possible_way( end , *args )
+        if not ways : return None
+        ret = []
+        for way in ways :
+            forge_way = self.calc( start , end - sum( self.forge[ name ] for name in way ) )
+            if forge_way is None : continue
+            forge_end = [ [ value , 1 ] for value in way ]
+            forge_end.reverse()
+            ret.append( ( forge_way , forge_end ) )
+        ret.sort( key = lambda item : self.get_steps( item[ 0 ] ) )
+        if not ret : return None
+        return ret[ 0 ]
 
     def output( self , *args ) -> None :
         self.clear()
-        num , end = self.pos
-        l = list( self.forge.values() )
-        ret = []
-        end -= sum( self.forge[ self.forge_name[ i.get() ] ] for i in self.combobox )
-        for i in sorted( l , key = lambda x : x + sum( abs( i ) for i in l ) if x < 0 else - x ) :
-            while [ ( num + i <= end ) and ( num + i <= 150 ) , ( num + i >= end ) and ( num + i >= 0 ) ][ i < 0 ] :
-                num += i
-                ret.append( [ self.forge_nums[ i ] , 1 ] )
-        while num != end :
-            ret.append( [ "forge.hit_light" , 1 ] )
-            if num < end :
-                num += 1
-                ret.append( [ "forge.punch" , 2 ] )
-            else :
-                num -= 1
-                ret.append( [ "forge.punch" , 1 ] )
-        if end <= 0 or end >= 150 :
+        line = 1
+        ret = self.calc_get()
+        if ret is None :
             self.print( self.lang[ "error" ] , cls = True )
-        else :
-            end_forge = self.join( list( reversed( [ [ i.get() , 1 ] for i in self.combobox ] ) ) )
-            ret = self.join( [ [ self.lang[ i[ 0 ] ] , i[ 1 ] ] for i in ret ] ) if ret else []
-            self.print( s := "\n".join( [ i for i in [ [] , ret + self.config[ "split" ] ][ bool( ret ) ] + end_forge ] ) )
-            if self.config[ "color" ] : self.color( str( s ).splitlines() )
+            if self.config[ "color" ] : self.info.tag_add( "error" , f"1.0" , f"1.{ len( self.lang[ "error" ] ) }" )
+            return None
+        ret = [ self.join( list( value ) ) for value in ret ]
+        for text in ( *ret[ 0 ] , None , *ret[ 1 ] ) :
+            if text is None :
+                if self.config[ "split" ] :
+                    self.print( "\n" )
+                    line += 1
+                continue
+            self.print( f"{ text }\n" )
+            if self.config[ "color" ] :
+                name , num = text.split( " * " )
+                self.info.tag_add( "forge" , f"{ line }.0" , f"{ line }.{ len( name ) }" )
+                self.info.tag_add( "num" , f"{ line }.{ len( name ) + 3 }" , f"{ line }.{ len( name ) + 3 + len( num ) }" )
+            line += 1
 
     def init( self ) -> None :
         # values
@@ -202,7 +242,7 @@ class main :
         tkinter.Label( frame_combobox , text = self.lang[ "end" ] ).pack( side = "left" )
         self.combobox : list[ tkinter.ttk.Combobox ] = []
         for _ in range( 3 ) :
-            combobox = tkinter.ttk.Combobox( frame_combobox , values = list( self.forge_name.keys() ) , state = "readonly" )
+            combobox = tkinter.ttk.Combobox( frame_combobox , values = [ *self.forge_name.keys() , self.lang[ "forge.any" ] ] , state = "readonly" )
             combobox.current( 0 )
             combobox.pack( side = "top" , expand = True , fill = "x" , padx = 1 , pady = 1 , ipady = 5 )
             self.combobox.append( combobox )
@@ -220,6 +260,8 @@ class main :
         self.clear()
         # key bindings
         [ self.root.bind( f"<{ key }>" , func ) for key , func in [ [ "Return" , self.output ] , [ "Control-l" , self.load ] , [ "Control-s" , self.save ] , [ "Delete" , self.clear ] ] ]
+        # colorful
+        if self.config[ "color" ] : [ self.info.tag_config( name , foreground = color ) for name , color in [ [ "forge" , "purple" ] , [ "num" , "yellowgreen" ] , [ "error" , "red" ] ] ]
 
 if __name__ == "__main__" :
     root = main( forge )

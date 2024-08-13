@@ -16,3 +16,4 @@ forge.punch = Punch
 forge.bend = Bend
 forge.upset = Upset
 forge.shrink = Shrink
+forge.any = Any
