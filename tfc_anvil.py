@@ -111,7 +111,7 @@ class main :
             entry = self.entry[ -1 ]
             entry.delete( 0 , "end" )
             entry.insert( 0 , str( data[ "pos" ] ) )
-            [ self.combobox[ i ].current( list( self.forge.keys() ).index( data[ "end" ][ i ] ) ) for i in range( len( self.combobox ) ) ]
+            [ self.combobox[ i ].current( list( self.forge_name.values() ).index( data[ "end" ][ i ] ) ) for i in range( len( self.combobox ) ) ]
             self.output()
         self.trydo( func )
 
@@ -201,7 +201,7 @@ class main :
         ret = self.calc_get()
         if ret is None :
             self.print( self.lang[ "error" ] , cls = True )
-            if self.config[ "color" ] : self.info.tag_add( "error" , f"1.0" , f"1.{ len( self.lang[ "error" ] ) }" )
+            if self.config[ "color" ] : self.info.tag_add( "error" , f"1.0" , f"2.0" )
             return None
         ret = [ self.join( list( value ) ) for value in ret ]
         for text in ( *ret[ 0 ] , None , *ret[ 1 ] ) :
@@ -219,8 +219,9 @@ class main :
 
     def init( self ) -> None :
         # values
-        self.forge_name = { self.lang[ i ] : i for i in forge }
-        self.forge_nums = { v : k for k , v in forge.items() }
+        self.forge_name = { self.lang[ key ] : key for key in [ *self.forge.keys() , "forge.any" ] }
+        print(self.forge_name)
+        self.forge_nums = { v : k for k , v in self.forge.items() }
         # create save dir
         self.save_path = os.path.join( "." , "save" )
         None if os.path.exists( self.save_path ) else os.mkdir( self.save_path )
@@ -242,7 +243,7 @@ class main :
         tkinter.Label( frame_combobox , text = self.lang[ "end" ] ).pack( side = "left" )
         self.combobox : list[ tkinter.ttk.Combobox ] = []
         for _ in range( 3 ) :
-            combobox = tkinter.ttk.Combobox( frame_combobox , values = [ *self.forge_name.keys() , self.lang[ "forge.any" ] ] , state = "readonly" )
+            combobox = tkinter.ttk.Combobox( frame_combobox , values = list( self.forge_name.keys() ) , state = "readonly" )
             combobox.current( 0 )
             combobox.pack( side = "top" , expand = True , fill = "x" , padx = 1 , pady = 1 , ipady = 5 )
             self.combobox.append( combobox )
