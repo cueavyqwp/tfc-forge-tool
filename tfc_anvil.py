@@ -220,7 +220,6 @@ class main :
     def init( self ) -> None :
         # values
         self.forge_name = { self.lang[ key ] : key for key in [ *self.forge.keys() , "forge.any" ] }
-        print(self.forge_name)
         self.forge_nums = { v : k for k , v in self.forge.items() }
         # create save dir
         self.save_path = os.path.join( "." , "save" )
