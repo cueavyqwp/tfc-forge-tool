@@ -53,14 +53,14 @@ class lang :
 
 class main :
 
-    def __init__( self , forge : dict[ str , int ] , font : list = [ "Microsoft YaHei" , 16 , "bold" ] , color : bool = True , split : bool = True ) -> None :
+    def __init__( self , forge : dict[ str , int ] , font : tuple = ( "Microsoft YaHei" , 16 , "bold" ) , color : bool = True , split : bool = True ) -> None :
         self.config = { "color" : color , "split" : split }
         self.root = tkinter.Tk()
         self.lang = lang()
         if os.name == "nt" : self.root.attributes( "-topmost" , True )
         self.root.protocol( "WM_DELETE_WINDOW" , self.exit )
         self.root.title( self.lang[ "title" ] )
-        self.root.geometry( f"400x700" )
+        self.root.geometry( f"300x600" )
         self.forge = forge
         self.font = font
 
@@ -99,8 +99,8 @@ class main :
                 ret.append( i )
         return [ f"{ self.lang[ name ] } * { num }" for name , num in ret ]
 
-    def trydo( self , func : typing.Callable ) -> None :
-        try : func( self )
+    def trydo( self , func : typing.Callable , *args , **kwargs ) -> typing.Any :
+        try : return func( self , *args , **kwargs )
         except : tkinter.messagebox.showerror( self.lang[ "error" ] , traceback.format_exc() )
 
     def load( self , *args ) -> None :
@@ -111,14 +111,14 @@ class main :
             entry = self.entry[ -1 ]
             entry.delete( 0 , "end" )
             entry.insert( 0 , str( data[ "pos" ] ) )
-            [ self.combobox[ i ].current( list( self.forge_name.values() ).index( data[ "end" ][ i ] ) ) for i in range( len( self.combobox ) ) ]
+            [ combobox.set( self.lang[ value ] ) for value , combobox in zip( data[ "end" ] , self.combobox ) ]
             self.output()
         self.trydo( func )
 
     def save( self , *args ) -> None :
-        path = tkinter.filedialog.asksaveasfilename( initialdir = self.save_path , initialfile = "" , filetypes = [ ( "JSON" , ".json" ) ] )
+        path = tkinter.filedialog.asksaveasfilename( initialdir = self.save_path , initialfile = "" , filetypes = ( ( "JSON" , ".json" ) , ) )
         if not path : return
-        if ( len( path ) < 5 ) or ( ".json" not in path ) : path += ".json"
+        if ( len( path ) < 5 ) or ( path[ -5 : ] != ".json" ) : path += ".json"
         data = { "pos" : self.pos[ -1 ] , "end" : [ self.forge_name[ combobox.get() ] for combobox in self.combobox ] }
         def func( self : main ) -> None :
             with open( path , "w" , encoding = "utf-8" ) as file : json.dump( data , file , indent = 4 , separators = ( " ," , ": " ) , ensure_ascii = False )
@@ -160,8 +160,8 @@ class main :
 
     def calc( self , start : int , end : int ) -> None | list[ list[ str | int ] ] :
         ret = []
-        for i in sorted( self.forge.values() , key = lambda x : x + sum( abs( i ) for i in self.forge.values() ) if x < 0 else - x ) :
-            while [ ( start + i <= end ) and ( start + i <= 150 ) , ( start + i >= end ) and ( start + i >= 0 ) ][ i < 0 ] :
+        for i in sorted( self.forge.values() , key = lambda x : x + sum( abs( value ) for value in self.forge.values() ) if x < 0 else - x ) :
+            while ( start + i >= end ) and ( start + i >= 0 ) if i < 0 else ( start + i <= end ) and ( start + i <= 150 ) :
                 start += i
                 ret.append( [ self.forge_nums[ i ] , 1 ] )
         while start != end :
@@ -230,7 +230,7 @@ class main :
         frame_combobox = tkinter.Frame( frame_option )
         # pos entry
         self.entry : list[ tkinter.ttk.Entry ] = []
-        for name in [ "pos.start" , "pos.end" ] :
+        for name in ( "pos.start" , "pos.end" ) :
             frame = tkinter.Frame( frame_option )
             tkinter.Label( frame , text = self.lang[ name ] ).pack( side = "left" , fill = "x" )
             pos = tkinter.ttk.Entry( frame , font = self.font )
@@ -253,15 +253,15 @@ class main :
         frame_option.pack( side = "left" )
         frame_combobox.pack( side = "top" , expand = True , fill = "x" )
         # load & save button
-        [ tkinter.ttk.Button( frame_option , text = self.lang[ text ] , command = func ).pack( side = "top" , expand = True , fill = "both" , padx = 1 , pady = 1 ) for text , func in [ [ "save" , self.save ] , [ "load" , self.load ] ] ]
+        [ tkinter.ttk.Button( frame_option , text = self.lang[ text ] , command = func ).pack( side = "top" , expand = True , fill = "both" , padx = 1 , pady = 1 ) for text , func in ( ( "save" , self.save ) , ( "load" , self.load ) ) ]
         # info text
         self.info = tkinter.scrolledtext.ScrolledText( self.root , relief = "ridge" , font = self.font )
         self.info.pack( side = "bottom" , expand = True , fill = "both" )
         self.clear()
         # key bindings
-        [ self.root.bind( f"<{ key }>" , func ) for key , func in [ [ "Return" , self.output ] , [ "Control-l" , self.load ] , [ "Control-s" , self.save ] , [ "Delete" , self.clear ] ] ]
+        [ self.root.bind( f"<{ key }>" , func ) for key , func in ( ( "Return" , self.output ) , ( "Control-l" , self.load ) , ( "Control-s" , self.save ) , ( "Delete" , self.clear ) ) ]
         # colorful
-        if self.config[ "color" ] : [ self.info.tag_config( name , foreground = color ) for name , color in [ [ "forge" , "purple" ] , [ "num" , "yellowgreen" ] , [ "error" , "red" ] ] ]
+        if self.config[ "color" ] : [ self.info.tag_config( name , foreground = color ) for name , color in ( ( "forge" , "purple" ) , ( "num" , "yellowgreen" ) , ( "error" , "red" ) ) ]
 
 if __name__ == "__main__" :
     root = main( forge )
