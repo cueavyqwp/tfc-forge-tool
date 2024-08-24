@@ -101,7 +101,7 @@ class main :
 
     def trydo( self , func : typing.Callable , *args , **kwargs ) -> typing.Any :
         try : return func( self , *args , **kwargs )
-        except : tkinter.messagebox.showerror( self.lang[ "error" ] , traceback.format_exc() )
+        except : tkinter.messagebox.showerror( self.lang[ "error" ] , ( traceback.format_exc() , traceback.print_exc() )[ 0 ] )
 
     def load( self , *args ) -> None :
         path = tkinter.filedialog.askopenfilename( initialdir = self.save_path )
