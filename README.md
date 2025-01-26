@@ -17,6 +17,16 @@
 
 使用前先从[上方](#资源包)安装对应版本资源包
 
+### 运行
+
+点击此处[main.zip](https://github.com/cueavyqwp/tfc-forge-tool/archive/refs/heads/main.zip)下载源码
+
+解压后找到`tfc_anvil.py`文件
+
+使用使用python3.10及以上版本来运行
+
+`python tfc_anvil.py`
+
 ### 操作界面
 
 - **起始位置** : 即绿色箭头位置
